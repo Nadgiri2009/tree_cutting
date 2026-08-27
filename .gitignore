@@ -1,0 +1,31 @@
+# .NET build output
+**/bin/
+**/obj/
+**/publish/
+
+# Local application data
+backend/TreeCutting.Api/Uploads/
+*.log
+
+# Environment and secret configuration
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Next.js and package manager artifacts
+frontend/tree-cutting-app/.next/
+frontend/tree-cutting-app/node_modules/
+frontend/tree-cutting-app/out/
+frontend/tree-cutting-app/.env*
+!frontend/tree-cutting-app/.env.example
+
+# IDE and OS files
+.vs/
+.vscode/
+**/.git.nested-backup/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini
