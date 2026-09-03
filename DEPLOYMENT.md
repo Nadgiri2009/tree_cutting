@@ -58,6 +58,8 @@ Use IIS URL Rewrite + ARR or configure the frontend as a Node app behind IIS.
 - SQL Server connection string
 - Allowed origin URLs
 - HTTPS binding and certificate
+- `SmsGateway__Password` environment variable for the ACL SMS gateway
+- `SmsGateway__Enabled=true` in environments where submission SMS should be sent
 
 ### Frontend
 - `NEXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com`

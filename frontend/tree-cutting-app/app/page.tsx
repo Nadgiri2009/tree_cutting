@@ -34,6 +34,7 @@ type SubmittedApplication = {
 } | null;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5216";
+const MAX_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
 
 const initialFormState: FormState = {
   applicationTypeId: "",
@@ -160,7 +161,7 @@ export default function Home() {
     if (!form.emailId.trim()) nextErrors.emailId = "Email ID is required.";
     if (!form.mobileNo.trim()) nextErrors.mobileNo = "Mobile number is required.";
     if (!form.aadharNo.trim()) nextErrors.aadharNo = "Aadhar number is required.";
-    if (!form.petName.trim()) nextErrors.petName = "Pet name is required.";
+    if (!form.petName.trim()) nextErrors.petName = "Peth Name is required.";
     if (!form.pethNo.trim()) nextErrors.pethNo = "Peth number is required.";
     if (!form.zoneNo.trim()) nextErrors.zoneNo = "Zone number is required.";
     if (!form.prabhagNo.trim()) nextErrors.prabhagNo = "Prabhag number is required.";
@@ -241,6 +242,12 @@ export default function Home() {
   };
 
   const handleDocumentUpload = (documentTypeId: number, file: File | null) => {
+    if (file && file.size > MAX_DOCUMENT_SIZE_BYTES) {
+      setPendingUploads((current) => ({ ...current, [String(documentTypeId)]: null }));
+      setErrors((current) => ({ ...current, documents: "Each document must be 5 MB or less." }));
+      return;
+    }
+
     setPendingUploads((current) => ({ ...current, [String(documentTypeId)]: file }));
     setErrors((current) => ({ ...current, documents: "" }));
   };
@@ -307,7 +314,15 @@ export default function Home() {
         });
 
         if (!uploadResponse.ok) {
-          throw new Error(`Document upload failed for ${document.documentTypeName}.`);
+          const responseMessage = await uploadResponse.text();
+          let message = responseMessage;
+          try {
+            const errorBody = JSON.parse(responseMessage) as { message?: string };
+            message = errorBody.message ?? responseMessage;
+          } catch {
+            // Keep the plain response when the API does not return JSON.
+          }
+          throw new Error(message || `Document upload failed for ${document.documentTypeName}.`);
         }
       }
 
@@ -477,8 +492,8 @@ export default function Home() {
                   </label>
 
                   <label className={styles.fieldWrap}>
-                    <span>Pet Name</span>
-                    <input value={form.petName} onChange={(e) => updateField("petName", e.target.value)} className={errors.petName ? styles.inputError : ""} placeholder="Enter pet name" />
+                    <span>Peth Name</span>
+                    <input value={form.petName} onChange={(e) => updateField("petName", e.target.value)} className={errors.petName ? styles.inputError : ""} placeholder="Enter Peth Name" />
                     {errors.petName ? <small>{errors.petName}</small> : null}
                   </label>
 

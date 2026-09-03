@@ -9,11 +9,19 @@ public class TreeCuttingService
 {
     private readonly TreeCuttingDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly ISmsGateway _smsGateway;
+    private readonly ILogger<TreeCuttingService> _logger;
 
-    public TreeCuttingService(TreeCuttingDbContext context, IWebHostEnvironment environment)
+    public TreeCuttingService(
+        TreeCuttingDbContext context,
+        IWebHostEnvironment environment,
+        ISmsGateway smsGateway,
+        ILogger<TreeCuttingService> logger)
     {
         _context = context;
         _environment = environment;
+        _smsGateway = smsGateway;
+        _logger = logger;
     }
 
     public async Task<List<MasterOptionDto>> GetApplicationTypesAsync()
@@ -222,6 +230,8 @@ public class TreeCuttingService
             return null;
         }
 
+        var wasSubmitted = application.IsSubmitted;
+
         var requiredDocuments = await GetDocumentsByApplicationTypeAsync(application.ApplicationTypeId);
         if (requiredDocuments.Count > 0)
         {
@@ -245,6 +255,21 @@ public class TreeCuttingService
         application.UpdatedDate = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        if (!wasSubmitted)
+        {
+            try
+            {
+                await _smsGateway.SendSmsAsync(
+                    $"Your tree cutting application {application.ApplicationNumber} has been submitted successfully.",
+                    application.MobileNo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to send submission SMS for application {ApplicationNumber}.", application.ApplicationNumber);
+            }
+        }
+
         return await GetApplicationByIdAsync(applicationId);
     }
 
@@ -290,9 +315,9 @@ public class TreeCuttingService
             throw new InvalidOperationException("A valid file is required to upload.");
         }
 
-        if (file.Length > 2 * 1024 * 1024)
+        if (file.Length > 5 * 1024 * 1024)
         {
-            throw new InvalidOperationException("Document size should be 2 MB or less.");
+            throw new InvalidOperationException("Document size should be 5 MB or less.");
         }
 
         var documentTypeName = await _context.DocumentTypes

@@ -12,6 +12,11 @@ builder.Services.AddDbContext<TreeCuttingDbContext>(options =>
         ?? "Server=(localdb)\\MSSQLLocalDB;Database=TreeCuttingDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
 
 builder.Services.AddScoped<TreeCuttingService>();
+builder.Services.Configure<SmsGatewayOptions>(builder.Configuration.GetSection("SmsGateway"));
+builder.Services.AddHttpClient<ISmsGateway, SmsGateway>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 builder.Services.AddCors(options =>
 {
