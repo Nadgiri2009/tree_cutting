@@ -10,17 +10,20 @@ public class TreeCuttingService
     private readonly TreeCuttingDbContext _context;
     private readonly IWebHostEnvironment _environment;
     private readonly ISmsGateway _smsGateway;
+    private readonly SmsGatewayOptions _smsGatewayOptions;
     private readonly ILogger<TreeCuttingService> _logger;
 
     public TreeCuttingService(
         TreeCuttingDbContext context,
         IWebHostEnvironment environment,
         ISmsGateway smsGateway,
+        Microsoft.Extensions.Options.IOptions<SmsGatewayOptions> smsGatewayOptions,
         ILogger<TreeCuttingService> logger)
     {
         _context = context;
         _environment = environment;
         _smsGateway = smsGateway;
+        _smsGatewayOptions = smsGatewayOptions.Value;
         _logger = logger;
     }
 
@@ -230,8 +233,6 @@ public class TreeCuttingService
             return null;
         }
 
-        var wasSubmitted = application.IsSubmitted;
-
         var requiredDocuments = await GetDocumentsByApplicationTypeAsync(application.ApplicationTypeId);
         if (requiredDocuments.Count > 0)
         {
@@ -256,21 +257,39 @@ public class TreeCuttingService
 
         await _context.SaveChangesAsync();
 
-        if (!wasSubmitted)
+        if (!application.SmsSent)
         {
             try
             {
-                await _smsGateway.SendSmsAsync(
-                    $"Your tree cutting application {application.ApplicationNumber} has been submitted successfully.",
+                var smsSent = await _smsGateway.SendSmsAsync(
+                    BuildSubmissionSms(application),
                     application.MobileNo);
+
+                if (smsSent)
+                {
+                    application.SmsSent = true;
+                    application.SmsSentDate = DateTime.UtcNow;
+                    application.SmsError = null;
+                    await _context.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
+                application.SmsError = ex.Message.Length <= 500 ? ex.Message : ex.Message[..500];
+                await _context.SaveChangesAsync();
                 _logger.LogWarning(ex, "Unable to send submission SMS for application {ApplicationNumber}.", application.ApplicationNumber);
+                throw new InvalidOperationException($"Application submitted, but the confirmation SMS could not be sent: {ex.Message}", ex);
             }
         }
 
         return await GetApplicationByIdAsync(applicationId);
+    }
+
+    private string BuildSubmissionSms(Application application)
+    {
+        return _smsGatewayOptions.MessageTemplate
+            .Replace("{FullName}", application.FullName, StringComparison.Ordinal)
+            .Replace("{ApplicationNumber}", application.ApplicationNumber, StringComparison.Ordinal);
     }
 
     public async Task<List<ApplicationDocumentDto>> GetApplicationDocumentsAsync(int applicationId)

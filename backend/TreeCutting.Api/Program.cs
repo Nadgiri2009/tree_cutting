@@ -287,6 +287,10 @@ public static class DatabaseBootstrap
                 context.Database.EnsureCreated();
             }
 
+            context.Database.ExecuteSqlRaw("IF COL_LENGTH('dbo.Application', 'SmsSent') IS NULL ALTER TABLE dbo.Application ADD SmsSent bit NOT NULL CONSTRAINT DF_Application_SmsSent DEFAULT 0 WITH VALUES;");
+            context.Database.ExecuteSqlRaw("IF COL_LENGTH('dbo.Application', 'SmsSentDate') IS NULL ALTER TABLE dbo.Application ADD SmsSentDate datetime2 NULL;");
+            context.Database.ExecuteSqlRaw("IF COL_LENGTH('dbo.Application', 'SmsError') IS NULL ALTER TABLE dbo.Application ADD SmsError nvarchar(500) NULL;");
+
             SeedData.Initialize(context);
         }
         catch

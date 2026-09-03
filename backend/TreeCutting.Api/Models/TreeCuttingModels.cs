@@ -123,6 +123,10 @@ public class Application
     public DateTime? SubmittedDate { get; set; }
     public bool IsSubmitted { get; set; }
     public string Status { get; set; } = "Draft";
+    public bool SmsSent { get; set; }
+    public DateTime? SmsSentDate { get; set; }
+    [MaxLength(500)]
+    public string? SmsError { get; set; }
 
     public ApplicationType ApplicationType { get; set; } = null!;
     public ApplicantType ApplicantType { get; set; } = null!;

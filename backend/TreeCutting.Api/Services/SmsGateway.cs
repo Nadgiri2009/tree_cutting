@@ -5,7 +5,7 @@ namespace TreeCutting.Api.Services;
 
 public interface ISmsGateway
 {
-    Task SendSmsAsync(string smsMessage, string mobileNumber, CancellationToken cancellationToken = default);
+    Task<bool> SendSmsAsync(string smsMessage, string mobileNumber, CancellationToken cancellationToken = default);
 }
 
 public sealed class SmsGateway : ISmsGateway
@@ -19,11 +19,11 @@ public sealed class SmsGateway : ISmsGateway
         _options = options.Value;
     }
 
-    public async Task SendSmsAsync(string smsMessage, string mobileNumber, CancellationToken cancellationToken = default)
+    public async Task<bool> SendSmsAsync(string smsMessage, string mobileNumber, CancellationToken cancellationToken = default)
     {
         if (!_options.Enabled)
         {
-            return;
+            return false;
         }
 
         if (string.IsNullOrWhiteSpace(_options.Password))
@@ -47,6 +47,25 @@ public sealed class SmsGateway : ISmsGateway
         }.Select(parameter => $"{WebUtility.UrlEncode(parameter.Key)}={WebUtility.UrlEncode(parameter.Value)}"));
 
         using var response = await _httpClient.GetAsync($"{_options.Endpoint}?{query}", cancellationToken);
-        response.EnsureSuccessStatusCode();
+        var gatewayResponse = (await response.Content.ReadAsStringAsync(cancellationToken)).Trim();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"SMS gateway returned {(int)response.StatusCode}: {gatewayResponse}");
+        }
+
+        if (string.IsNullOrWhiteSpace(gatewayResponse))
+        {
+            throw new InvalidOperationException("SMS gateway returned an empty response.");
+        }
+
+        if (gatewayResponse.Contains("error", StringComparison.OrdinalIgnoreCase)
+            || gatewayResponse.Contains("failed", StringComparison.OrdinalIgnoreCase)
+            || gatewayResponse.Contains("invalid", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"SMS gateway rejected the message: {gatewayResponse}");
+        }
+
+        return true;
     }
 }

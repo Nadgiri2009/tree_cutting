@@ -86,7 +86,10 @@ CREATE TABLE dbo.Application (
     UpdatedDate DATETIME2 NULL,
     SubmittedDate DATETIME2 NULL,
     IsSubmitted BIT NOT NULL DEFAULT 0,
-    Status NVARCHAR(50) NOT NULL DEFAULT 'Draft'
+    Status NVARCHAR(50) NOT NULL DEFAULT 'Draft',
+    SmsSent BIT NOT NULL DEFAULT 0,
+    SmsSentDate DATETIME2 NULL,
+    SmsError NVARCHAR(500) NULL
 );
 
 CREATE UNIQUE INDEX UX_Application_ApplicationNumber

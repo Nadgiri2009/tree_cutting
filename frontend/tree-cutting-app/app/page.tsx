@@ -293,7 +293,13 @@ export default function Home() {
         throw new Error(message || "Unable to create form application.");
       }
 
-      const createdApplication = await applicationResponse.json();
+      const createdApplication = (await applicationResponse.json()) as {
+        applicationId?: number;
+        applicationNumber?: string;
+      };
+      if (!createdApplication.applicationId || !createdApplication.applicationNumber) {
+        throw new Error("The API returned an invalid application response.");
+      }
       const applicationId = createdApplication.applicationId;
       const applicationNumber = createdApplication.applicationNumber;
 
@@ -324,6 +330,22 @@ export default function Home() {
           }
           throw new Error(message || `Document upload failed for ${document.documentTypeName}.`);
         }
+      }
+
+      const submitResponse = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/submit`, {
+        method: "POST",
+      });
+
+      if (!submitResponse.ok) {
+        const responseMessage = await submitResponse.text();
+        let message = responseMessage;
+        try {
+          const errorBody = JSON.parse(responseMessage) as { message?: string };
+          message = errorBody.message ?? responseMessage;
+        } catch {
+          // Keep the plain response when the API does not return JSON.
+        }
+        throw new Error(message || "Application submission failed.");
       }
 
       setSubmittedApplication({
