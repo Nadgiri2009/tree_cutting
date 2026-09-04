@@ -90,3 +90,4 @@ public record ApplicationCreateResponse(
 public record UploadDocumentRequest(
     int ApplicationTypeId,
     int DocumentTypeId);
+

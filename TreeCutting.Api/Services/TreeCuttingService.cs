@@ -278,7 +278,6 @@ public class TreeCuttingService
                 application.SmsError = ex.Message.Length <= 500 ? ex.Message : ex.Message[..500];
                 await _context.SaveChangesAsync();
                 _logger.LogWarning(ex, "Unable to send submission SMS for application {ApplicationNumber}.", application.ApplicationNumber);
-                throw new InvalidOperationException("Application submitted, but the confirmation SMS could not be sent. Please try submitting again.", ex);
             }
         }
 

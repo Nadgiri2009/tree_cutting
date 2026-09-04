@@ -15,7 +15,7 @@ builder.Services.AddScoped<TreeCuttingService>();
 builder.Services.Configure<SmsGatewayOptions>(builder.Configuration.GetSection("SmsGateway"));
 builder.Services.AddHttpClient<ISmsGateway, SmsGateway>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(10);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddCors(options =>

@@ -10,5 +10,8 @@ public sealed class SmsGatewayOptions
     public string Sender { get; set; } = "MAHGOV";
     public string CountryCode { get; set; } = "91";
     public string DltTemplateId { get; set; } = "DLT";
-    public string MessageTemplate { get; set; } = "Dear {FullName}, your tree cutting application {ApplicationNumber} has been submitted successfully.";
+    public string MessageTemplate { get; set; } = "Thank You for the Application. Your Application Number is {ApplicationNumber}. Thank you, SMC, Solapur.";
+    public string OtpMessageTemplate { get; set; } = "Your OTP Number is {OTP}. Please Enter the OTP to proceed. Thank you, SMC, Solapur.";
+    public int OtpExpiryMinutes { get; set; } = 10;
+    public int OtpMaxAttempts { get; set; } = 5;
 }

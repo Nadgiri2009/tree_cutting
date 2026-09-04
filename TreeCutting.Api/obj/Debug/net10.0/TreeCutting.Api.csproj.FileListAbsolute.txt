@@ -293,3 +293,4 @@ D:\SHREYAS\Projects\SMC Projects\New Projects\Only Forms\tree_cutting\.build-val
 D:\SHREYAS\Projects\SMC Projects\New Projects\Only Forms\tree_cutting\.build-validation\TreeCutting.Api.runtimeconfig.json
 D:\SHREYAS\Projects\SMC Projects\New Projects\Only Forms\tree_cutting\.build-validation\TreeCutting.Api.dll
 D:\SHREYAS\Projects\SMC Projects\New Projects\Only Forms\tree_cutting\.build-validation\TreeCutting.Api.pdb
+D:\SHREYAS\Projects\SMC Projects\New Projects\Only Forms\tree_cutting\backend\TreeCutting.Api\obj\Debug\net10.0\TreeCutting.Api.sourcelink.json
